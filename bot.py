@@ -8,8 +8,8 @@ TOKEN = os.getenv('BOT_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
 
-def get_schedule(url):
-    rows = url.find_all("tr")
+def get_schedule(soup):
+    rows = soup.find_all("tr")
     schedule_dict = {}
 
     found = False
@@ -31,97 +31,58 @@ def get_schedule(url):
                 subject = cells[4].get_text(strip=True)
 
                 if num_lesson:
-                    clean_num = int(num_lesson.replace(".", ""))
-                    schedule_dict[clean_num] = subject
+                    try:
+                        clean_num = int(num_lesson.replace(".", ""))
+                        schedule_dict[clean_num] = subject
+                    except ValueError:
+                        continue
     return schedule_dict
 
 
-schedule = [
-    {
-        1: "",
-        2: "Техника коммуникации и основы командообразования",
-        3: "Техника коммуникации и основы командообразования",
-        4: "Программные средства создания Интернет-приложений",
-        5: "Предпринимательская деятельность и управление проектами",
-        6: "Бухгалтерский учет",
-        7: "Бухгалтерский учет",
-        8: "Системы управления базами данных"
-    },
-    {
-        1: "Бухгалтерский учет",
-        2: "Программные средства создания Интернет-приложений",
-        3: "Физическая культура и здоровье",
-        4: "Конструирование программ и языки программирования",
-        5: "Конструирование программ и языки программирования",
-        6: "Кураторский час",
-        7: "Системы управления базами данных"
-    },
-    {
-        1: "",
-        2: "",
-        3: "",
-        4: "Тестирование программного обеспечения",
-        5: "Техника коммуникации и основы командообразования",
-        6: "Предпринимательская деятельность и управление проектами",
-        7: "Бухгалтерский учет",
-        8: "Бухгалтерский учет",
-        9: "Веб-программирование на стороне сервера"
-    },
-    {
-        1: "Конструирование программ и языки программирования",
-        2: "Конструирование программ и языки программирования",
-        3: "Бухгалтерский учет",
-        4: "Физическая культура и здоровье",
-        5: "Тестирование программного обеспечения",
-        6: "Тестирование программного обеспечения",
-        7: "Информационный час"
-    },
-    {
-        1: "Системы управления базами данных",
-        2: "Системы управления базами данных",
-        3: "Техника коммуникации и основы командообразования",
-        4: "Техника коммуникации и основы командообразования",
-        5: "Предпринимательская деятельность и управление проектами",
-        6: "Бухгалтерский учет",
-        7: ""
-    },
-    {
-        1: "Системы управления базами данных",
-        2: "Программные средства создания Интернет-приложений",
-        3: "Программные средства создания Интернет-приложений",
-        4: "Тестирование программного обеспечения",
-        5: "Физическая культура и здоровье",
-        6: "Веб-программирование на стороне сервера",
-        7: "Веб-программирование на стороне сервера"
-    }
+schedule_base = [
+    {1: "", 2: "Техника коммуникации...", 3: "Техника коммуникации...", 4: "ПС создания Интернет-приложений", 5: "Предпринимательская деят.", 6: "Бухгалтерский учет", 7: "Бухгалтерский учет", 8: "СУБД"},
+    {1: "Бухгалтерский учет", 2: "ПС создания Интернет-приложений", 3: "Физкультура", 4: "Конструирование программ", 5: "Конструирование программ", 6: "Кураторский час", 7: "СУБД"},
+    {1: "", 2: "", 3: "", 4: "Тестирование ПО", 5: "Техника коммуникации...", 6: "Предпринимательская деят.", 7: "Бухгалтерский учет", 8: "Бухгалтерский учет", 9: "Веб-программирование"},
+    {1: "Конструирование программ", 2: "Конструирование программ", 3: "Бухгалтерский учет", 4: "Физкультура", 5: "Тестирование ПО", 6: "Тестирование ПО", 7: "Информационный час"},
+    {1: "СУБД", 2: "СУБД", 3: "Техника коммуникации...", 4: "Техника коммуникации...", 5: "Предпринимательская деят.", 6: "Бухгалтерский учет", 7: ""},
+    {1: "СУБД", 2: "ПС создания Интернет-приложений", 3: "ПС создания Интернет-приложений", 4: "Тестирование ПО", 5: "Физкультура", 6: "Веб-программирование", 7: "Веб-программирование"}
 ]
 
 day_index = datetime.datetime.now().weekday()
 
-Monday = 'https://docs.google.com/document/d/1sV5QloMUpfqkyfLLc59QmPTyBXNSUYA1/pub'
-Tuesday = 'https://docs.google.com/document/d/16BoaCwKzlnWrmTYhuAcH42nhrv-IlOkt/pub'
-Wednesday = 'https://docs.google.com/document/d/1nSdGG8YjdwCM9_KHVfXj0dk9tflhq_gX/pub'
-Thursday = 'https://docs.google.com/document/d/1yCtjpPTl1hb6PhlqJMCbbch9Tbh5NtSQ/pub'
-Friday = 'https://docs.google.com/document/d/1No-WT977T-oS3OTTTG8s5RTfJw4RKUeK/pub'
-Saturday = 'https://docs.google.com/document/d/1biAObySxkm-xeFuR_1otpU_xT6YGMKmO/pub'
+day_list = [
+    'https://docs.google.com/document/d/1sV5QloMUpfqkyfLLc59QmPTyBXNSUYA1/pub',
+    'https://docs.google.com/document/d/16BoaCwKzlnWrmTYhuAcH42nhrv-IlOkt/pub',
+    'https://docs.google.com/document/d/1nSdGG8YjdwCM9_KHVfXj0dk9tflhq_gX/pub',
+    'https://docs.google.com/document/d/1yCtjpPTl1hb6PhlqJMCbbch9Tbh5NtSQ/pub', 
+    'https://docs.google.com/document/d/1No-WT977T-oS3OTTTG8s5RTfJw4RKUeK/pub', 
+    'https://docs.google.com/document/d/1biAObySxkm-xeFuR_1otpU_xT6YGMKmO/pub'
+]
 
-day_list = [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
 if day_index < 6:
-    current_url = day_list[day_index]
-    response = requests.get(current_url)
-    html = response.text
-    soup = BeautifulSoup(html, "html.parser")
+    try:
+        current_url = day_list[day_index]
+        response = requests.get(current_url)
+        html = response.text
+        soup = BeautifulSoup(html, "html.parser")
 
-    result = get_schedule(soup)
-    for key, value in result.items():
-        if not value and key in schedule[day_index]:
-            result[key] = schedule[day_index][key]
-    
-    text = "Расписание на сегодня:\n\n"
-    for num, subject in sorted(result.items()):
-        status = subject if subject else "---"
-        text += f"{num}. {status}\n"
+        result = get_schedule(soup)
+        
+        for key, value in result.items():
+            if not value and key in schedule_base[day_index]:
+                result[key] = schedule_base[day_index][key]
+        
+        for num, sub in schedule_base[day_index].items():
+            if num not in result:
+                result[num] = sub
 
-    bot.send_message(CHAT_ID, text)
+        text = f"Расписание на сегодня ({datetime.date.today()}):\n\n"
+        for num, subject in sorted(result.items()):
+            status = subject if subject else "---"
+            text += f"{num}. {status}\n"
+
+        bot.send_message(CHAT_ID, text)
+    except Exception as e:
+        bot.send_message(CHAT_ID, f"Произошла ошибка: {e}")
 else:
-    bot.send_message(CHAT_ID, "Сегодня воскресенье. Отдых.")
+    bot.send_message(CHAT_ID, "Сегодня воскресенье.")
