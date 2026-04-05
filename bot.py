@@ -124,4 +124,4 @@ if day_index < 6:
 
     bot.send_message(CHAT_ID, text)
 else:
-    bot.send_message(CHAT_ID, "Сегодня воскресенье, пар нет! Отдыхай.")
+    bot.send_message(CHAT_ID, "Сегодня воскресенье. Отдых.")
