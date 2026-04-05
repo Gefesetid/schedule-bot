@@ -117,7 +117,7 @@ if day_index < 6:
         if not value and key in schedule[day_index]:
             result[key] = schedule[day_index][key]
     
-    text = "📅 Расписание на сегодня:\n\n"
+    text = "Расписание на сегодня:\n\n"
     for num, subject in sorted(result.items()):
         status = subject if subject else "---"
         text += f"{num}. {status}\n"
