@@ -1,7 +1,12 @@
+import telebot
+import os
 import requests
 from bs4 import BeautifulSoup
 import datetime
 
+TOKEN = os.getenv('BOT_TOKEN')
+CHAT_ID = os.getenv('CHAT_ID')
+bot = telebot.TeleBot(TOKEN)
 
 def get_schedule(url):
     rows = url.find_all("tr")
@@ -103,7 +108,7 @@ Saturday = 'https://docs.google.com/document/d/1biAObySxkm-xeFuR_1otpU_xT6YGMKmO
 day_list = [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
 if day_index < 6:
     current_url = day_list[day_index]
-    response = requests.get(current_url)  # реализовал передачу дня тут
+    response = requests.get(current_url)
     html = response.text
     soup = BeautifulSoup(html, "html.parser")
 
@@ -111,6 +116,12 @@ if day_index < 6:
     for key, value in result.items():
         if not value and key in schedule[day_index]:
             result[key] = schedule[day_index][key]
-    print(f"Расписание на сегодня: {result}")
+    
+    text = "📅 Расписание на сегодня:\n\n"
+    for num, subject in sorted(result.items()):
+        status = subject if subject else "---"
+        text += f"{num}. {status}\n"
+
+    bot.send_message(CHAT_ID, text)
 else:
-    print("Сегодня воскресенье")
+    bot.send_message(CHAT_ID, "Сегодня воскресенье, пар нет! Отдыхай.")
