@@ -4,11 +4,26 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import datetime
+from flask import Flask
+from threading import Thread
+
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Бот запущен и работает!"
+
+def run():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
 
 TOKEN = os.getenv('BOT_TOKEN')
 CHAT_ID = os.getenv('CHAT_ID')
 bot = telebot.TeleBot(TOKEN)
-
 
 def get_schedule(soup):
     rows = soup.find_all("tr")
@@ -35,74 +50,14 @@ def get_schedule(soup):
                         continue
     return schedule_dict
 
-
-# Базовое расписание
+# Базовое расписание (на случай отсутствия замен)
 schedule_base = [
-    # День 1
-    {
-        1: ["", ""],
-        2: ["", ""],
-        3: ["Техника коммуникации и основы командообразования", "29-С"],
-        4: ["Техника коммуникации и основы командообразования", "29-С"],
-        5: ["Программные средства создания Интернет-приложений", "16-Б/22-Б"],
-        6: ["Предпринимательская деятельность и управление проектами", "1-С"],
-        7: ["Бухгалтерский учет", "25-Б"],
-        8: ["Бухгалтерский учет", "25-Б"],
-        9: ["Системы управления базами данных", "22-Б/16-Б"]
-    },
-    # День 2
-    {
-        1: ["", ""],
-        2: ["Бухгалтерский учет", "26-Б"],
-        3: ["Программные средства создания Интернет-приложений", "16-Б/22-Б"],
-        4: ["Физическая культура и здоровье", "с/з"],
-        5: ["Конструирование программ и языки программирования", "17-С/36-Б"],
-        6: ["Конструирование программ и языки программирования", "17-С/36-Б"],
-        7: ["Кураторский час", "6-С"],
-        8: ["Системы управления базами данных", "22-Б/16-Б"]
-    },
-    # День 3
-    {
-        1: ["", ""],
-        2: ["", ""],
-        3: ["", ""],
-        4: ["Тестирование программного обеспечения", "20-Б/16-Б"],
-        5: ["Техника коммуникации и основы командообразования", "29-С"],
-        6: ["Предпринимательская деятельность и управление проектами", "6-С"],
-        7: ["Бухгалтерский учет", "25-Б"],
-        8: ["Бухгалтерский учет", "25-Б"],
-        9: ["Веб-программирование на стороне сервера", "22-Б/16-Б"],
-    },
-    # День 4
-    {
-        1: ["Конструирование программ и языки программирования", "17-С/36-Б"],
-        2: ["Конструирование программ и языки программирования", "17-С/36-Б"],
-        3: ["Бухгалтерский учет", "26-Б"],
-        4: ["Физическая культура и здоровье", "с/з"],
-        5: ["Тестирование программного обеспечения", "20-Б/16-Б"],
-        6: ["Тестирование программного обеспечения", "20-Б/16-Б"],
-        7: ["Информационный час", "6-С"]
-    },
-    # День 5
-    {
-        1: ["Системы управления базами данных", "22-Б/36-Б"],
-        2: ["Системы управления базами данных", "22-Б/36-Б"],
-        3: ["Техника коммуникации и основы командообразования", "1-С"],
-        4: ["Техника коммуникации и основы командообразования", "1-С"],
-        5: ["Предпринимательская деятельность и управление проектами", "1-С"],
-        6: ["Бухгалтерский учет", "25-Б"],
-        7: ["", ""]
-    },
-    # День 6
-    {
-        1: ["Системы управления базами данных", "22-Б/36-Б"],
-        2: ["Программные средства создания Интернет-приложений", "16-Б/22-Б"],
-        3: ["Программные средства создания Интернет-приложений", "16-Б/22-Б"],
-        4: ["Тестирование программного обеспечения", "20-Б/16-Б"],
-        5: ["Физическая культура и здоровье", "с/з"],
-        6: ["Веб-программирование на стороне сервера", "22-Б/16-Б"],
-        7: ["Веб-программирование на стороне сервера", "22-Б/16-Б"]
-    }
+    {1: ["", ""], 2: ["", ""], 3: ["Техника коммуникации", "29-С"], 4: ["Техника коммуникации", "29-С"], 5: ["Интернет-приложения", "16-Б/22-Б"], 6: ["Управление проектами", "1-С"], 7: ["Бухгалтерский учет", "25-Б"], 8: ["Бухгалтерский учет", "25-Б"], 9: ["СУБД", "22-Б/16-Б"]},
+    {1: ["", ""], 2: ["Бухгалтерский учет", "26-Б"], 3: ["Интернет-приложения", "16-Б/22-Б"], 4: ["Физкультура", "с/з"], 5: ["Языки программирования", "17-С/36-Б"], 6: ["Языки программирования", "17-С/36-Б"], 7: ["Кураторский час", "6-С"], 8: ["СУБД", "22-Б/16-Б"]},
+    {1: ["", ""], 2: ["", ""], 3: ["", ""], 4: ["Тестирование ПО", "20-Б/16-Б"], 5: ["Техника коммуникации", "29-С"], 6: ["Управление проектами", "6-С"], 7: ["Бухгалтерский учет", "25-Б"], 8: ["Бухгалтерский учет", "25-Б"], 9: ["Веб-программирование (сервер)", "22-Б/16-Б"]},
+    {1: ["Языки программирования", "17-С/36-Б"], 2: ["Языки программирования", "17-С/36-Б"], 3: ["Бухгалтерский учет", "26-Б"], 4: ["Физкультура", "с/з"], 5: ["Тестирование ПО", "20-Б/16-Б"], 6: ["Тестирование ПО", "20-Б/16-Б"], 7: ["Информационный час", "6-С"]},
+    {1: ["СУБД", "22-Б/36-Б"], 2: ["СУБД", "22-Б/36-Б"], 3: ["Техника коммуникации", "1-С"], 4: ["Техника коммуникации", "1-С"], 5: ["Управление проектами", "1-С"], 6: ["Бухгалтерский учет", "25-Б"], 7: ["", ""]},
+    {1: ["СУБД", "22-Б/36-Б"], 2: ["Интернет-приложения", "16-Б/22-Б"], 3: ["Интернет-приложения", "16-Б/22-Б"], 4: ["Тестирование ПО", "20-Б/16-Б"], 5: ["Физкультура", "с/з"], 6: ["Веб-программирование (сервер)", "22-Б/16-Б"], 7: ["Веб-программирование (сервер)", "22-Б/16-Б"]}
 ]
 
 day_list = [
@@ -113,7 +68,6 @@ day_list = [
     'https://docs.google.com/document/d/1No-WT977T-oS3OTTTG8s5RTfJw4RKUeK/pub',
     'https://docs.google.com/document/d/1biAObySxkm-xeFuR_1otpU_xT6YGMKmO/pub'
 ]
-
 
 def get_main_keyboard():
     keyboard = types.InlineKeyboardMarkup()
@@ -130,26 +84,19 @@ def get_main_keyboard():
     keyboard.row(btns[4], btns[5])
     return keyboard
 
-
 @bot.message_handler(commands=['start'])
 def start_command(message):
-    bot.send_message(message.chat.id, "Привет! Выбери день недели:", reply_markup=get_main_keyboard())
-
+    bot.send_message(message.chat.id, "Привет! Выбери день недели для просмотра расписания:", reply_markup=get_main_keyboard())
 
 @bot.message_handler(func=lambda message: True)
 def menu(message):
     bot.send_message(message.chat.id, "Выбери день недели:", reply_markup=get_main_keyboard())
 
-
 @bot.callback_query_handler(func=lambda call: True)
 def callback_schedule(call):
     if call.data == "back":
-        bot.edit_message_text(
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            text="Выбери день недели:",
-            reply_markup=get_main_keyboard()
-        )
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, 
+                              text="Выбери день недели:", reply_markup=get_main_keyboard())
         return
 
     day_map = {"btn1": 0, "btn2": 1, "btn3": 2, "btn4": 3, "btn5": 4, "btn6": 5}
@@ -157,13 +104,11 @@ def callback_schedule(call):
     if call.data in day_map:
         day_index = day_map[call.data]
         try:
-            current_url = day_list[day_index]
-            response = requests.get(current_url)
-            html = response.text
-            soup = BeautifulSoup(html, "html.parser")
-
+            response = requests.get(day_list[day_index])
+            soup = BeautifulSoup(response.text, "html.parser")
             result = get_schedule(soup)
 
+            # Объединение замен с базовым расписанием
             for key, value in result.items():
                 if not value[0] and key in schedule_base[day_index]:
                     result[key][0] = schedule_base[day_index][key][0]
@@ -175,41 +120,20 @@ def callback_schedule(call):
                     result[num] = sub
 
             text = f"Расписание на выбранный день ({datetime.date.today()}):\n\n"
-
             for num, subject in sorted(result.items()):
-                stat_cabs = ""
-                status = subject if bool(subject[0]) else "нет"
-
-                if status != "нет" and "/" not in status[-1] and len(status[-1]) > 4:
-                    stat_cabs = f"{status[-1][:4]}/{status[-1][4:]}"
-                else:
-                    stat_cabs = str(status[-1])
-
-                if isinstance(status, list):
-                    status = str(status[0]).replace("[", "").replace("'", "").replace("]", "").replace(",", "")
-
-                if 3 < len(stat_cabs) < 9:
-                    stat_cabs = stat_cabs.replace("/", "", 1)
-
-                if status == "нет":
-                    text += f"{num}. {status}\n"
-                else:
-                    text += f"{num}. {status}: {stat_cabs}\n"
+                sub_name = subject[0] if subject[0] else "нет"
+                cabinet = subject[1] if subject[1] else "-"
+                text += f"{num}. {sub_name} (каб. {cabinet})\n"
 
             keyboard = types.InlineKeyboardMarkup()
             keyboard.add(types.InlineKeyboardButton("Назад", callback_data="back"))
-
-            bot.edit_message_text(
-                chat_id=call.message.chat.id,
-                message_id=call.message.message_id,
-                text=text,
-                reply_markup=keyboard
-            )
+            bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, 
+                                  text=text, reply_markup=keyboard)
         except Exception as e:
             bot.answer_callback_query(call.id, "Ошибка при загрузке данных")
             print(f"Error: {e}")
 
-
 if __name__ == "__main__":
+    keep_alive()
     print("Бот запущен...")
     bot.polling(none_stop=True)
